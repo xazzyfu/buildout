@@ -30,10 +30,11 @@ To illustrate this, we'll create a package in a sample buildout:
     ...       author_email="bob@foo.com",
     ...       )
     ... """)
-  
+
 We can use the buildout command to generate the hello egg:
 
-    >>> print_(system(buildout +' setup hello -q bdist_egg'), end='')
+    >>> print_(system(buildout +' setup hello -q bdist_egg',
+    ... env={'PYTHONWARNINGS':'ignore'}), end='')
     Running setup script 'hello/setup.py'.
     zip_safe flag not set; analyzing archive contents...
 

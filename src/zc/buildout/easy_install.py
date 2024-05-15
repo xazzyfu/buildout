@@ -43,15 +43,19 @@ from zc.buildout import PY3
 import warnings
 import csv
 
+from setuptools import __version__ as setuptools_version
+setuptools_version = pkg_resources.parse_version(setuptools_version)
+
 try:
     from setuptools.wheel import Wheel  # This is the important import
-    from setuptools import __version__ as setuptools_version
     # Now we need to check if we have at least 38.2.3 for namespace support.
     SETUPTOOLS_SUPPORTS_WHEELS = (
-        pkg_resources.parse_version(setuptools_version) >=
-        pkg_resources.parse_version('38.2.3'))
+        setuptools_version >= pkg_resources.parse_version('38.2.3'))
 except ImportError:
     SETUPTOOLS_SUPPORTS_WHEELS = False
+
+SETUPTOOLS_IGNORE_WARNINGS = (
+  setuptools_version >= pkg_resources.parse_version('67.7.0'))
 
 
 BIN_SCRIPTS = 'Scripts' if WINDOWS else 'bin'
@@ -1133,7 +1137,11 @@ def develop(setup, dest,
         if log_level < logging.DEBUG:
             logger.debug("in: %r\n%s", directory, ' '.join(args))
 
-        call_subprocess(args)
+        if SETUPTOOLS_IGNORE_WARNINGS:
+            env = dict(os.environ, PYTHONWARNINGS='ignore')
+        else:
+            env=None
+        call_subprocess(args, env=env)
         _detect_distutils_scripts(tmp3)
         return _copyeggs(tmp3, dest, '.egg-link', undo)
 

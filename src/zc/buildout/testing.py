@@ -165,12 +165,14 @@ def _runsetup(setup, *args):
     args = list(args)
     args.insert(0, '-q')
     here = os.getcwd()
+    ignore_warnings = zc.buildout.easy_install.SETUPTOOLS_IGNORE_WARNINGS
     try:
         os.chdir(os.path.dirname(setup))
         zc.buildout.easy_install.call_subprocess(
             [sys.executable, setup] + args,
             env=dict(os.environ,
                      PYTHONPATH=zc.buildout.easy_install.pip_pythonpath,
+                     PYTHONWARNINGS='ignore' if ignore_warnings else ''
                      ),
             )
         if os.path.exists('build'):
