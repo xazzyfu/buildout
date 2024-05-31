@@ -338,7 +338,7 @@ class Installer(object):
         return '\n  '.join(output)
 
     def _satisfied(self, req, source=None):
-        dists = [dist for dist in self._env[req.project_name] if dist in req]
+        dists = [dist for dist in self._env[req.key] if dist in req]
         if not dists:
             logger.debug('We have no distributions for %s that satisfies %r.',
                          req.project_name, str(req))
@@ -475,7 +475,7 @@ class Installer(object):
             return None
 
         # Filter the available dists for the requirement and source flag
-        dists = [dist for dist in index[requirement.project_name]
+        dists = [dist for dist in index[requirement.key]
                  if ((dist in requirement)
                      and
                      ((not source) or
