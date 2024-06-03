@@ -470,17 +470,33 @@ class Installer(object):
         # initialize out index for this project:
         index = self._index
 
-        if index.obtain(requirement) is None:
+        index.obtain(requirement) # ignore result
+        # setuptools may get mixed-up between . and - in project names
+        # due to . and - being turned into _ in sdist archive names, but
+        # _ in archive names being translated to - during index lookup.
+        # See https://github.com/buildout/buildout/issues/647
+
+        dists = [d for d in index[requirement.key] if d in requirement]
+
+        # Workaround by also looking up the name with - instead of .
+        # and fixing the name of dists found back to . instead of -.
+        wkrd_key = requirement.key.replace('.', '-')
+        if wkrd_key != requirement.key:
+            dists.extend(
+                d.clone(project_name=requirement.project_name)
+                for d in index[wkrd_key]
+                if d.key == wkrd_key # for thoroughness
+                and d.version in requirement
+            )
+
+        if not dists:
             # Nothing is available.
             return None
 
-        # Filter the available dists for the requirement and source flag
-        dists = [dist for dist in index[requirement.key]
-                 if ((dist in requirement)
-                     and
-                     ((not source) or
+        # Filter the available dists for the source flag.
+        dists = [dist for dist in dists
+                 if ((not source) or
                       (dist.precedence == pkg_resources.SOURCE_DIST)
-                      )
                      )
                  ]
 
